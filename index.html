@@ -16,7 +16,11 @@
             }
 
             function start() {
-                httpGetAsync("http://localhost:8080", (response) => {
+                setInterval(updateField, 100);
+            }
+
+            function updateField() {
+                httpGetAsync("http://ai.church:19091/arkanoid", (response) => {
                     canv=document.getElementById("gc");
                     ctx=canv.getContext("2d");
                     var data = JSON.parse(response);
