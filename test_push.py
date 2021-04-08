@@ -1,6 +1,7 @@
 # Test key-value storage
 import base64
 import json
+import time
 import urllib.request
 import urllib.parse
 
@@ -29,15 +30,20 @@ def push_data(key_name, data):
 
 
 if __name__ == "__main__":
-    data = {
-        'figures': [
-            {'type': 'rectangle', 'color': 'black', 'x': 0, 'y': 0, 'width': 400, 'height': 400},
-            {'type': 'rectangle', 'color': 'lightgreen', 'x': 10, 'y': 10, 'width': 40, 'height': 20},
-            {'type': 'rectangle', 'color': 'lightgreen', 'x': 100, 'y': 100, 'width': 40, 'height': 20},
-            {'type': 'rectangle', 'color': 'lightgreen', 'x': 150, 'y': 100, 'width': 40, 'height': 20},
-            {'type': 'circle', 'color': 'red', 'x': 150, 'y': 250, 'r': 10},
-            {'type': 'circle', 'color': 'blue', 'x': 200, 'y': 400, 'r': 50},
-        ]
-    }
-    print(push_data('arkanoid', data))
+    x, y = 150, 150
+    while True:
+        data = {
+            'figures': [
+                {'type': 'rectangle', 'color': 'black', 'x': 0, 'y': 0, 'width': 400, 'height': 400},
+                {'type': 'rectangle', 'color': 'lightgreen', 'x': 10, 'y': 10, 'width': 40, 'height': 20},
+                {'type': 'rectangle', 'color': 'lightgreen', 'x': 100, 'y': 100, 'width': 40, 'height': 20},
+                {'type': 'rectangle', 'color': 'lightgreen', 'x': 150, 'y': 100, 'width': 40, 'height': 20},
+                {'type': 'circle', 'color': 'red', 'x': x, 'y': y, 'r': 10},
+                {'type': 'circle', 'color': 'blue', 'x': 200, 'y': 400, 'r': 50},
+            ]
+        }
+        print(push_data('arkanoid', data))
+        x = 150 + (x - 150 + 5) % 100
+        y = 150 + (y - 150 + 5) % 100
+        time.sleep(0.1)
 
