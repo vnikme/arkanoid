@@ -9,13 +9,14 @@ serverPort = 8080
 class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
         answer = {
-            'bricks': [
-                {'x': 10, 'y': 10, 'width': 40, 'height': 20},
-                {'x': 100, 'y': 100, 'width': 40, 'height': 20},
-                {'x': 150, 'y': 100, 'width': 40, 'height': 20},
-            ],
-            'ball': {'x': 200, 'y': 200, 'r': 10},
-            'platform': {'x': 200, 'y': 400, 'r': 50},
+            'figures': [
+                {'type': 'rectangle', 'color': 'black', 'x': 0, 'y': 0, 'width': 400, 'height': 400},
+                {'type': 'rectangle', 'color': 'lightgreen', 'x': 10, 'y': 10, 'width': 40, 'height': 20},
+                {'type': 'rectangle', 'color': 'lightgreen', 'x': 100, 'y': 100, 'width': 40, 'height': 20},
+                {'type': 'rectangle', 'color': 'lightgreen', 'x': 150, 'y': 100, 'width': 40, 'height': 20},
+                {'type': 'circle', 'color': 'red', 'x': 200, 'y': 200, 'r': 10},
+                {'type': 'circle', 'color': 'blue', 'x': 200, 'y': 400, 'r': 50},
+            ]
         }
         answer = bytes(json.dumps(answer), "utf-8")
         #answer = bytes("test", "utf-8")
