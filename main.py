@@ -32,7 +32,7 @@ def solve_square_equation(a, b, c):
         if x < EPS:
             return 0.0
         return x
-    x = (b - d**0.5) / 2 / a
+    x = (-b + d**0.5) / 2 / a
     if x < -EPS:
         return None
     if x < EPS:
@@ -50,7 +50,6 @@ def intersection_time_for_horizontal_segment_and_moving_ball(x1, x2, y, x0, y0, 
     # (vx**2+vy**2)*t**2+2*(x0*vx-vx*x+y0*vy-vy*y)*t+x0**2+x**2-2*x0*x+y0**2+y**2-2*y0*y-r**2=0
     t1 = solve_square_equation(vx**2+vy**2, 2*(x0*vx-vx*x1+y0*vy-vy*y), x0**2+x1**2-2*x0*x1+y0**2+y**2-2*y0*y-r**2)
     t2 = solve_square_equation(vx**2+vy**2, 2*(x0*vx-vx*x2+y0*vy-vy*y), x0**2+x2**2-2*x0*x2+y0**2+y**2-2*y0*y-r**2)
-    print(t_line, t1, t2)
     result = (t_line, 0, 1, y) if t_line != None else None
     if t1 != None and (result == None or t1 < result[0]):
         result = (t1, 0, 1, y)
@@ -59,12 +58,32 @@ def intersection_time_for_horizontal_segment_and_moving_ball(x1, x2, y, x0, y0, 
     return result
 
 
-#def intersect_brick_and_moving_ball(x1, y1, x2, y2, x3, y3, x4, y4, x0, y0, r, vx, vy):
+def intersection_time_for_vertical_segment_and_moving_ball(x, y1, y2, x0, y0, r, vx, vy):
+    result = intersection_time_for_horizontal_segment_and_moving_ball(y1, y2, x, y0, x0, r, vy, vx)
+    return (result[0], result[2], result[1], result[3]) if result else None
+
+
+def intersect_brick_and_moving_ball(x1, y1, x2, y2, x0, y0, r, vx, vy):
+    t1 = intersection_time_for_horizontal_segment_and_moving_ball(x1, x2, y1, x0, y0, r, vx, vy)
+    t3 = intersection_time_for_horizontal_segment_and_moving_ball(x1, x2, y2, x0, y0, r, vx, vy)
+    t2 = intersection_time_for_vertical_segment_and_moving_ball(x1, x2, y1, x0, y0, r, vx, vy)
+    t4 = intersection_time_for_vertical_segment_and_moving_ball(x1, x2, y2, x0, y0, r, vx, vy)
+    result = t1
+    if t2 != None and (result == None or t2[0] < result[0]):
+        result = t2
+    if t1 != None and (result == None or t1[0] < result[0] - EPS):
+        result = t1
+    if t3 != None and (result == None or t3[0] < result[0] - EPS):
+        result = t3
+    return result
+
+
 def main():
     print(intersection_time_for_horizontal_segment_and_moving_ball(0, 1, 0, 0, -2, 2, -1, -1))
     print(intersection_time_for_horizontal_segment_and_moving_ball(0, 1, 0, 1, -3, 2, 0, -1))
     print(intersection_time_for_horizontal_segment_and_moving_ball(0.1, 1, 0, 1, -3, 2, -1, 1))
-
+    print(intersect_brick_and_moving_ball(0, 1, 2, 0, 3, -2, 1, -2**0.5/2, 2**0.5/2))
+    print(intersect_brick_and_moving_ball(0, 1, 2, 0, 3, 3, 1, -2**0.5/2, -2**0.5/2))
 
 if __name__ == '__main__':
     main()
