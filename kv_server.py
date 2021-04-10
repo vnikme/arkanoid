@@ -2,7 +2,6 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import time
 import json
-import base64
 
 hostName = "ai.church"
 serverPort = 19091
@@ -13,8 +12,7 @@ class MyServer(BaseHTTPRequestHandler):
     def do_POST(self):
         content_len = int(self.headers.get('Content-Length'))
         post_body = self.rfile.read(content_len)
-        post_body = base64.b64decode(post_body.decode('utf-8')).decode('utf-8')
-        post_body = json.loads(post_body)
+        post_body = json.loads(post_body.decode('utf-8'))
         key_name = post_body['key']
         data = post_body['value']
         globalStorage[key_name] = data

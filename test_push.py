@@ -1,5 +1,4 @@
 # Test key-value storage
-import base64
 import json
 import time
 import urllib.request
@@ -19,8 +18,7 @@ def push_data(key_name, data):
         'key': key_name,
         'value': data,
     }
-    data = bytes(json.dumps(data), "utf-8")
-    data = base64.b64encode(data)
+    data = bytes(json.dumps(data), 'utf-8')
     request = urllib.request.Request(url, headers=headers, data=data, method='POST')
     try:
         response = urllib.request.urlopen(request)
