@@ -1,3 +1,6 @@
+from arkanoid.vector import TVector
+
+
 class TBrick:
     def __init__(self, position, strength):
         self.position = position

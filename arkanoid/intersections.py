@@ -1,4 +1,7 @@
-EPS = 0.00001
+from arkanoid.vector import (
+    TVector,
+    EPS,
+)
 
 
 def intersection_time_for_horizontal_line_and_moving_ball(y, y0, r, vy):
@@ -71,8 +74,8 @@ def intersect_brick_and_moving_ball(lu, rd, ball):
     ball_direction = ball.direction.scalar_multiply(ball.speed)
     t1 = intersection_time_for_horizontal_segment_and_moving_ball(x1, x2, y1, ball_position, r, ball_direction)
     t3 = intersection_time_for_horizontal_segment_and_moving_ball(x1, x2, y2, ball_position, r, ball_direction)
-    t2 = intersection_time_for_vertical_segment_and_moving_ball(x1, x2, y1, ball_position, r, ball_direction)
-    t4 = intersection_time_for_vertical_segment_and_moving_ball(x1, x2, y2, ball_position, r, ball_direction)
+    t2 = intersection_time_for_vertical_segment_and_moving_ball(x1, y1, y2, ball_position, r, ball_direction)
+    t4 = intersection_time_for_vertical_segment_and_moving_ball(x2, y1, y2, ball_position, r, ball_direction)
     result = t1
     if t2 != None and (result == None or t2[0] < result[0]):
         result = t2
