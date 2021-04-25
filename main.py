@@ -94,12 +94,12 @@ def main():
         t = min(intersections[-1][0], 1.0)
         #t = intersections[-1][0]
         d = game.ball.direction.get_normalised().scalar_multiply(game.ball.speed * t)
-        if t < 1.0:
-            game.ball.direction = reflect_moving_point_from_lines(game.ball.position, game.ball.direction, list(map(lambda x: x[1], intersections)))
+        if abs(t - intersections[-1][0]) < EPS:
+            game.ball.direction = reflect_moving_point_from_lines(game.ball.position, game.ball.direction, d, list(map(lambda x: x[1], intersections)))
         game.ball.position = game.ball.position.add(d)
         print(game.ball.position, game.ball.direction, d)
         print(push_data('arkanoid', get_rendering_data(game)))
-        #time.sleep(1.0)
+        #time.sleep(0.3)
 
 
 if __name__ == '__main__':
