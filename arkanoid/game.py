@@ -65,3 +65,9 @@ class TGame:
         )
         self.platform = TPlatform(data["platform"]["x"], data["platform"]["r"])
 
+    def get_brick_lu(self, position):
+        return TVector(position.x * self.brick_width, position.y * self.brick_height)
+
+    def get_brick_rd(self, position):
+        return TVector((position.x + 1) * self.brick_width, (position.y + 1) * self.brick_height)
+

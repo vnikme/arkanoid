@@ -62,7 +62,7 @@ def intersection_time_for_horizontal_segment_and_moving_ball(x1, x2, y, ball_pos
 
 
 def intersection_time_for_vertical_segment_and_moving_ball(x, y1, y2, ball_position, r, ball_direction):
-    result = intersection_time_for_horizontal_segment_and_moving_ball(y1, y2, x, ball_position, r, ball_direction)
+    result = intersection_time_for_horizontal_segment_and_moving_ball(y1, y2, x, TVector(ball_position.y, ball_position.x), r, TVector(ball_direction.y, ball_direction.x))
     return (result[0], TVector(result[1].y, result[1].x)) if result else None
 
 

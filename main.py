@@ -11,18 +11,28 @@ from arkanoid.game import (
     TGame,
 )
 from arkanoid.intersectable import (
-    TIntersectableVerticalSegment,
-    TIntersectableHorizontalSegment,
+    TIntersectableVerticalWall,
+    TIntersectableHorizontalWall,
+    TIntersectableBrick,
 )
 
 
 def build_intersection_times_and_normals(game):
     objects = [
-        TIntersectableVerticalSegment(0, 0, game.size.y),
-        TIntersectableVerticalSegment(game.size.x, 0, game.size.y),
-        TIntersectableHorizontalSegment(0, game.size.x, 0),
-        TIntersectableHorizontalSegment(0, game.size.x, game.size.y),
-    ]
+        TIntersectableVerticalWall(0, 0, game.size.y),
+        TIntersectableVerticalWall(game.size.x, 0, game.size.y),
+        TIntersectableHorizontalWall(0, game.size.x, 0),
+        TIntersectableHorizontalWall(0, game.size.x, game.size.y),
+    ] + list(
+        map(
+            lambda obj: TIntersectableBrick(
+                game.get_brick_lu(obj[1].position),
+                game.get_brick_rd(obj[1].position),
+                obj[0]
+            ),
+            enumerate(game.bricks)
+        )
+    )
     intersections = list(map(lambda obj: obj.intersect(game.ball), objects))
     print(intersections)
 
