@@ -55,7 +55,7 @@ def get_rendering_data(game):
         lu = game.get_brick_lu(brick.position)
         figures.append({'type': 'rectangle', 'color': 'lightgreen', 'x': lu.x, 'y': lu.y, 'width': game.brick_width, 'height': game.brick_height})
     figures.append({'type': 'circle', 'color': 'red', 'x': game.ball.position.x, 'y': game.ball.position.y, 'r': game.ball.radius})
-    figures.append({'type': 'circle', 'color': 'blue', 'x': game.platform.position, 'y': game.size.y, 'r': game.platform.radius})
+    #figures.append({'type': 'circle', 'color': 'blue', 'x': game.platform.position, 'y': game.size.y, 'r': game.platform.radius})
     return { 'figures': figures }
 
 
@@ -78,7 +78,7 @@ def build_closest_intersections(game):
     print(list(map(lambda obj: obj.intersect(game.ball), objects)))
     result = []
     for intersection in list(map(lambda obj: obj.intersect(game.ball), objects)):
-        if intersection is None:
+        if intersection is None or abs(intersection[0]) < EPS:
             continue
         if not result or intersection[0] < result[-1][0]:
             result = [intersection]
@@ -92,10 +92,11 @@ def main():
     while True:
         intersections = build_closest_intersections(game)
         t = min(intersections[-1][0], 1.0)
+        #t = intersections[-1][0]
         d = game.ball.direction.get_normalised().scalar_multiply(game.ball.speed * t)
-        game.ball.position = game.ball.position.add(d)
         if t < 1.0:
             game.ball.direction = reflect_moving_point_from_lines(game.ball.position, game.ball.direction, list(map(lambda x: x[1], intersections)))
+        game.ball.position = game.ball.position.add(d)
         print(game.ball.position, game.ball.direction, d)
         print(push_data('arkanoid', get_rendering_data(game)))
         #time.sleep(1.0)

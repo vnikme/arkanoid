@@ -42,6 +42,12 @@ def solve_square_equation(a, b, c):
     return x
 
 
+def is_approaching_line(p, d, l):
+    if (l.a * p.x + l.b * p.y + l.c) * (l.a * d.x + l.b * d.y) > -EPS:      # going away from the line
+        return False
+    return True
+
+
 def intersection_time_for_horizontal_segment_and_moving_ball(x1, x2, y, ball_position, r, ball_direction):
     x0, y0 = ball_position.x, ball_position.y
     vx, vy = ball_direction.x, ball_direction.y
@@ -54,11 +60,22 @@ def intersection_time_for_horizontal_segment_and_moving_ball(x1, x2, y, ball_pos
     # (vx**2+vy**2)*t**2+2*(x0*vx-vx*x+y0*vy-vy*y)*t+x0**2+x**2-2*x0*x+y0**2+y**2-2*y0*y-r**2=0
     t1 = solve_square_equation(vx**2+vy**2, 2*(x0*vx-vx*x1+y0*vy-vy*y), x0**2+x1**2-2*x0*x1+y0**2+y**2-2*y0*y-r**2)
     t2 = solve_square_equation(vx**2+vy**2, 2*(x0*vx-vx*x2+y0*vy-vy*y), x0**2+x2**2-2*x0*x2+y0**2+y**2-2*y0*y-r**2)
-    result = (t_line, TLine(0, 1, -y)) if t_line != None else None
+    result = (t_line, TLine(0, 1, -y)) if t_line != None and is_approaching_line(ball_position, ball_direction, TLine(0, 1, -y)) else None
+    #print(x1, x2, y, t1, t2, TVector(x1 - x2, 0).dot(ball_direction), TVector(x2 - x1, 0).dot(ball_direction))
     if t1 != None and (result == None or t1 < result[0]):
-        result = (t1, TLine(0, 1, -y))
+        if TVector(x1 - x2, 0).dot(ball_direction) < 0.0:
+            l = TLine(1, 0, -x1)
+        else:
+            l = TLine(0, 1, -y)
+        if is_approaching_line(ball_position, ball_direction, l):
+            result = (t1, l)
     if t2 != None and (result == None or t2 < result[0]):
-        result = (t2, TLine(0, 1, -y))
+        if TVector(x2 - x1, 0).dot(ball_direction) < 0.0:
+            l = TLine(1, 0, -x2)
+        else:
+            l = TLine(0, 1, -y)
+        if is_approaching_line(ball_position, ball_direction, l):
+            result = (t2, l)
     return result
 
 
@@ -80,17 +97,11 @@ def intersect_brick_and_moving_ball(lu, rd, ball):
     result = t1
     if t2 != None and (result == None or t2[0] < result[0]):
         result = t2
-    if t1 != None and (result == None or t1[0] < result[0] - EPS):
-        result = t1
-    if t3 != None and (result == None or t3[0] < result[0] - EPS):
+    if t3 != None and (result == None or t3[0] < result[0]):
         result = t3
+    if t4 != None and (result == None or t4[0] < result[0]):
+        result = t4
     return result
-
-
-def is_approaching_line(p, d, l):
-    if (l.a * p.x + l.b * p.y + l.c) * (l.a * d.x + l.b * d.y) >= 0.0:  # going away from the line
-        return False
-    return True
 
 
 def reflect_vector_by_normal(d, n):
