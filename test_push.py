@@ -10,7 +10,7 @@ serverPort = 19091
 
 
 def push_data(key_name, data):
-    url = 'http://ai.church:{}/push'.format(serverPort)
+    url = 'http://{}:{}/push'.format(hostName, serverPort)
     headers = {
         'Content-Type': 'application/json',
     }

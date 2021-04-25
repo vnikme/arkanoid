@@ -33,3 +33,10 @@ class TVector:
     def dot(self, other):
         return self.x * other.x + self.y * other.y
 
+    def is_colinear(self, other):
+        self_length = self.get_length()
+        other_length = other.get_length()
+        if abs(self_length) < EPS or abs(other_length) < EPS:
+            return True
+        return abs(abs(self.dot(other) / self_length / other_length) - 1.0) < EPS
+

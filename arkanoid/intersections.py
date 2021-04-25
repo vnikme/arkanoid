@@ -2,6 +2,7 @@ from arkanoid.vector import (
     TVector,
     EPS,
 )
+from arkanoid.line import TLine
 
 
 def intersection_time_for_horizontal_line_and_moving_ball(y, y0, r, vy):
@@ -53,17 +54,17 @@ def intersection_time_for_horizontal_segment_and_moving_ball(x1, x2, y, ball_pos
     # (vx**2+vy**2)*t**2+2*(x0*vx-vx*x+y0*vy-vy*y)*t+x0**2+x**2-2*x0*x+y0**2+y**2-2*y0*y-r**2=0
     t1 = solve_square_equation(vx**2+vy**2, 2*(x0*vx-vx*x1+y0*vy-vy*y), x0**2+x1**2-2*x0*x1+y0**2+y**2-2*y0*y-r**2)
     t2 = solve_square_equation(vx**2+vy**2, 2*(x0*vx-vx*x2+y0*vy-vy*y), x0**2+x2**2-2*x0*x2+y0**2+y**2-2*y0*y-r**2)
-    result = (t_line, TVector(0, 1)) if t_line != None else None
+    result = (t_line, TLine(0, 1, -y)) if t_line != None else None
     if t1 != None and (result == None or t1 < result[0]):
-        result = (t1, TVector(0, 1))
+        result = (t1, TLine(0, 1, -y))
     if t2 != None and (result == None or t2 < result[0]):
-        result = (t2, TVector(0, 1))
+        result = (t2, TLine(0, 1, -y))
     return result
 
 
 def intersection_time_for_vertical_segment_and_moving_ball(x, y1, y2, ball_position, r, ball_direction):
     result = intersection_time_for_horizontal_segment_and_moving_ball(y1, y2, x, TVector(ball_position.y, ball_position.x), r, TVector(ball_direction.y, ball_direction.x))
-    return (result[0], TVector(result[1].y, result[1].x)) if result else None
+    return (result[0], TLine(result[1].b, result[1].a, result[1].c)) if result else None
 
 
 def intersect_brick_and_moving_ball(lu, rd, ball):
@@ -86,12 +87,35 @@ def intersect_brick_and_moving_ball(lu, rd, ball):
     return result
 
 
-def reflect_vector(d, n):
+def is_approaching_line(p, d, l):
+    if (l.a * p.x + l.b * p.y + l.c) * (l.a * d.x + l.b * d.y) >= 0.0:  # going away from the line
+        return False
+    return True
+
+
+def reflect_vector_by_normal(d, n):
     n = n.get_normalised()
     dn = d.dot(n)
     r = d.sub(n.scalar_multiply(2 * dn))
     return r
 
+
+def reflect_moving_point_from_lines(p, d, lines):
+    # (p.x + d.x * t) * l.a + (p.y + d.y * t) * l.b + l.c
+    # t * (l.a * d.x + l.b * d.y) + (l.a * p.x + l.b * p.y + l.c)
+    # d(g(f(t)))/dt = dg/df * df/dt
+    # df(t)^2/dt = 2f(t) * df/dt
+    # 2 * (l.a * p.x + l.b * p.y + l.c) * (l.a * d.x + l.b * d.y)
+    #print('reflecting: {}'.format(d))
+    for l in lines:
+        if not is_approaching_line(p, d, l):
+            #print('skipping: {} {} {}'.format(p, d, l))
+            continue
+        #print('doing')
+        d = reflect_vector_by_normal(d, TVector(l.a, l.b)).get_normalised()
+    #print('result: {}'.format(d))
+    return d
+    
 
 def test_basic_functions():
     print(intersection_time_for_horizontal_segment_and_moving_ball(0, 1, 0, TVector(0, -2), 2, TVector(-1, -1)))
