@@ -111,7 +111,7 @@ def reflect_vector_by_normal(d, n):
     return r
 
 
-def reflect_moving_point_from_lines(p, d, first_move, lines):
+def reflect_moving_point_from_lines(p, d, first_move, intersections):
     # (p.x + d.x * t) * l.a + (p.y + d.y * t) * l.b + l.c
     # t * (l.a * d.x + l.b * d.y) + (l.a * p.x + l.b * p.y + l.c)
     # d(g(f(t)))/dt = dg/df * df/dt
@@ -119,7 +119,7 @@ def reflect_moving_point_from_lines(p, d, first_move, lines):
     # 2 * (l.a * p.x + l.b * p.y + l.c) * (l.a * d.x + l.b * d.y)
     #print('reflecting: {}'.format(d))
     is_first = True
-    for l in lines:
+    for l, intersection in intersections:
         if not is_approaching_line(p, d, l):
             #print('skipping: {} {} {}'.format(p, d, l))
             continue
@@ -128,6 +128,7 @@ def reflect_moving_point_from_lines(p, d, first_move, lines):
             is_first = False
             p = p.add(first_move)
         d = reflect_vector_by_normal(d, TVector(l.a, l.b)).get_normalised()
+        intersection.on_intersection()
     #print('result: {}'.format(d))
     return d
     

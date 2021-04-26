@@ -8,13 +8,16 @@
         "positions": [
             { "x": 1, "y": 1, "strength": 3 },
             { "x": 3, "y": 5, "strength": 2 },
-            { "x": 5, "y": 3, "strength": 1 }
+            { "x": 5, "y": 3, "strength": 7 },
+            { "x": 6, "y": 3, "strength": 3 },
+            { "x": 7, "y": 5, "strength": 2 },
+            { "x": 7, "y": 7, "strength": 1 }
         ]
     },
     "ball": {
-        "x": 160.0,
+        "x": 150.0,
         "y": 150.0,
-        "speed": 10.0,
+        "speed": 1.0,
         "dx": -1.0,
         "dy": -1.0,
         "r": 10.0

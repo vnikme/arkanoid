@@ -17,6 +17,9 @@ class TIntersectableBase:
             return None
         return result
 
+    def on_intersection(self):
+        pass
+
 
 class TIntersectableVerticalWall(TIntersectableBase):
     def __init__(self, x, y0, y1):
@@ -41,11 +44,16 @@ class TIntersectableHorizontalWall(TIntersectableBase):
 
 
 class TIntersectableBrick(TIntersectableBase):
-    def __init__(self, lu, rd, idx):
+    def __init__(self, lu, rd, brick):
         self.lu = lu
         self.rd = rd
-        self.idx = idx
+        self.brick = brick
 
     def do_intersect(self, ball):
+        if self.brick.strength == 0:
+            return None
         return intersect_brick_and_moving_ball(self.lu, self.rd, ball)
+
+    def on_intersection(self):
+        self.brick.strength = max(self.brick.strength - 1, 0)
 
