@@ -7,19 +7,20 @@
         "width": 40,
         "positions": [
             { "x": 1, "y": 1, "strength": 3 },
-            { "x": 3, "y": 5, "strength": 2 },
+            { "x": 4, "y": 5, "strength": 2 },
+            { "x": 4, "y": 6, "strength": 1 },
             { "x": 5, "y": 3, "strength": 7 },
             { "x": 6, "y": 3, "strength": 3 },
             { "x": 7, "y": 5, "strength": 2 },
-            { "x": 7, "y": 7, "strength": 1 }
+            { "x": 7, "y": 7, "strength": 4 }
         ]
     },
     "ball": {
-        "x": 150.0,
+        "x": 160.0,
         "y": 150.0,
-        "speed": 1.0,
-        "dx": -1.0,
-        "dy": -1.0,
+        "speed": 0.5,
+        "dx": -1.3,
+        "dy": -1.7,
         "r": 10.0
     },
     "platform": { "x": 200, "r": 50 }

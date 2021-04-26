@@ -55,7 +55,9 @@ def get_rendering_data(game):
         if brick.strength == 0:
             continue
         lu = game.get_brick_lu(brick.position)
-        figures.append({'type': 'rectangle', 'color': 'lightgreen', 'x': lu.x, 'y': lu.y, 'width': game.brick_width, 'height': game.brick_height})
+        color = min(127 + brick.strength * 10, 255)
+        color = '#00{}00'.format(hex(color)[2:])
+        figures.append({'type': 'rectangle', 'color': color, 'x': lu.x, 'y': lu.y, 'width': game.brick_width, 'height': game.brick_height})
     figures.append({'type': 'circle', 'color': 'red', 'x': game.ball.position.x, 'y': game.ball.position.y, 'r': game.ball.radius})
     #figures.append({'type': 'circle', 'color': 'blue', 'x': game.platform.position, 'y': game.size.y, 'r': game.platform.radius})
     return { 'figures': figures }
