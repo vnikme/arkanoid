@@ -14,12 +14,15 @@ class TIntersectableBase:
         result = self.do_intersect(ball)
         if not result:
             return result
-        if not is_approaching_line(ball.position, ball.direction, result[1]):
+        if not self.is_approaching_line(ball.position, ball.direction, result[1]):
             return None
         return result
 
     def on_intersection(self):
         pass
+
+    def is_approaching_line(self, p, d, l):
+        return is_approaching_line(p, d, l)
 
 
 class TIntersectableVerticalWall(TIntersectableBase):
@@ -67,4 +70,7 @@ class TIntersectablePlatform(TIntersectableBase):
     def do_intersect(self, ball):
         ball_direction = ball.direction.scalar_multiply(ball.speed)
         return intersect_static_ball_and_moving_ball(self.platform_position, self.platform_radius, ball.position, ball.radius, ball_direction)
+
+    def is_approaching_line(self, p, d, l):
+        return d.y >= 0
 

@@ -65,9 +65,27 @@ class TGame:
         )
         self.platform = TPlatform(data["platform"]["x"], data["platform"]["r"])
 
+    def serialize(self):
+        result = {}
+        result["size"] = { "width": self.size.x, "height": self.size.y }
+        result["bricks"] = { "rows": self.bricks_rows, "cols": self.bricks_cols, "height": self.brick_height, "width": self.brick_width, "positions": [] }
+        for brick in self.bricks:
+            result["bricks"]["positions"].append({ "x": brick.position.x, "y": brick.position.y, "strength": brick.strength })
+        result["ball"] = { "x": self.ball.position.x, "y": self.ball.position.y, "speed": self.ball.speed, "dx": self.ball.direction.x, "dy": self.ball.direction.y, "r": self.ball.radius }
+        result["platform"] = { "x": self.platform.position, "r": self.platform.radius }
+        return result
+
     def get_brick_lu(self, position):
         return TVector(position.x * self.brick_width, position.y * self.brick_height)
 
     def get_brick_rd(self, position):
         return TVector((position.x + 1) * self.brick_width, (position.y + 1) * self.brick_height)
+
+    def move_platform(self, delta):
+        x = self.platform.position
+        if x + delta - self.platform.radius < 0 or x + delta + self.platform.radius >= self.size.x:
+            return x
+        if (x + delta - self.ball.position.x)**2 + (self.size.y - self.ball.position.y)**2 <= (self.ball.radius + self.platform.radius)**2:
+            return x
+        return x + delta
 
