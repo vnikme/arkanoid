@@ -111,12 +111,18 @@ def intersect_static_ball_and_moving_ball(static_ball_position, static_ball_radi
     x0, y0 = ball_position.x, ball_position.y
     dx, dy = ball_direction.x, ball_direction.y
     r0 = ball_radius
-    # (x0 + dx * t - x1) ^ 2 + (y0 + dy * t - y1) ^ 2 = (r0 + r1) ^ 2
-    # (dx^2 + dy^2) * t^2 + 2 * (x0 * dx - x1 * dx + y0 * dy - y1 * dy) * t + (x0^2 + x1^2 + y0^2 + y1^2 - 2*x0*x1 - 2*y0*y1 - (r0 + r1)^2) = 0
-    t = solve_square_equation(dx**2 + dy**2, 2 * (x0 * dx - x1 * dx + y0 * dy - y1 * dy), (x0**2 + x1**2 + y0**2 + y1**2 - 2*x0*x1 - 2*y0*y1 - (r0 + r1)**2))
-    #print("Platform intersection: {}".format(t))
-    if t is None:
-        return None
+    if (x1 - x0)**2 + (y1 - y0)**2 > (r0 + r1)**2:
+        # (x0 + dx * t - x1) ^ 2 + (y0 + dy * t - y1) ^ 2 = (r0 + r1) ^ 2
+        # (dx^2 + dy^2) * t^2 + 2 * (x0 * dx - x1 * dx + y0 * dy - y1 * dy) * t + (x0^2 + x1^2 + y0^2 + y1^2 - 2*x0*x1 - 2*y0*y1 - (r0 + r1)^2) = 0
+        t = solve_square_equation(dx**2 + dy**2, 2 * (x0 * dx - x1 * dx + y0 * dy - y1 * dy), (x0**2 + x1**2 + y0**2 + y1**2 - 2*x0*x1 - 2*y0*y1 - (r0 + r1)**2))
+        #print("Platform intersection: {}".format(t))
+        if t is None:
+            return None
+    else:
+        t = ((x1 - x0)**2 + (y1 - y0)**2)**0.5 / (r0 + r1)
+        r0 *= t
+        r1 *= t
+        t = 0.0
     x, y = x0 + dx * t, y0 + dy * t
     a, b = x1 - x, y1 - y
     x2, y2 = x + r0 / (r0 + r1) * a, y + r0 / (r0 + r1) * b

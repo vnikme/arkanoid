@@ -2,6 +2,7 @@
 
 
 import json
+import random
 import sys
 import time
 import urllib.request
@@ -105,8 +106,9 @@ def main():
             #print('reflections count: {}'.format(len(intersections)))
             game.ball.direction = reflect_moving_point_from_lines(game.ball.position, game.ball.direction, d, list(map(lambda x: (x[0][1], x[1]), intersections)))
         game.ball.position = game.ball.position.add(d)
-        print(game.ball.position, game.ball.direction, d)
+        #print(game.ball.position, game.ball.direction, d)
         print(push_data('arkanoid', get_rendering_data(game)))
+        game.platform.position = min(max(game.platform.radius, game.platform.position + random.uniform(-10, 10)), game.size.x - game.platform.radius)
         #time.sleep(0.3)
 
 
