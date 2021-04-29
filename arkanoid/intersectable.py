@@ -2,6 +2,7 @@ from arkanoid.intersections import (
     intersection_time_for_vertical_segment_and_moving_ball,
     intersection_time_for_horizontal_segment_and_moving_ball,
     intersect_brick_and_moving_ball,
+    intersect_static_ball_and_moving_ball,
     is_approaching_line,
 )
 
@@ -56,4 +57,14 @@ class TIntersectableBrick(TIntersectableBase):
 
     def on_intersection(self):
         self.brick.strength = max(self.brick.strength - 1, 0)
+
+
+class TIntersectablePlatform(TIntersectableBase):
+    def __init__(self, platform_position, platform_radius):
+        self.platform_position = platform_position
+        self.platform_radius = platform_radius
+
+    def do_intersect(self, ball):
+        ball_direction = ball.direction.scalar_multiply(ball.speed)
+        return intersect_static_ball_and_moving_ball(self.platform_position, self.platform_radius, ball.position, ball.radius, ball_direction)
 

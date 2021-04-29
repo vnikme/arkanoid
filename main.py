@@ -20,9 +20,11 @@ from arkanoid.intersectable import (
     TIntersectableVerticalWall,
     TIntersectableHorizontalWall,
     TIntersectableBrick,
+    TIntersectablePlatform,
 )
 from arkanoid.intersections import (
     reflect_moving_point_from_lines,
+    test_basic_functions,
 )
 
 
@@ -59,7 +61,7 @@ def get_rendering_data(game):
         color = '#00{}00'.format(hex(color)[2:])
         figures.append({'type': 'rectangle', 'color': color, 'x': lu.x, 'y': lu.y, 'width': game.brick_width, 'height': game.brick_height})
     figures.append({'type': 'circle', 'color': 'red', 'x': game.ball.position.x, 'y': game.ball.position.y, 'r': game.ball.radius})
-    #figures.append({'type': 'circle', 'color': 'blue', 'x': game.platform.position, 'y': game.size.y, 'r': game.platform.radius})
+    figures.append({'type': 'circle', 'color': 'blue', 'x': game.platform.position, 'y': game.size.y, 'r': game.platform.radius})
     return { 'figures': figures }
 
 
@@ -69,6 +71,7 @@ def build_closest_intersections(game):
         TIntersectableVerticalWall(game.size.x, 0, game.size.y),
         TIntersectableHorizontalWall(0, game.size.x, 0),
         TIntersectableHorizontalWall(0, game.size.x, game.size.y),
+        TIntersectablePlatform(TVector(game.platform.position, game.size.y), game.platform.radius),
     ] + list(
         map(
             lambda obj: TIntersectableBrick(

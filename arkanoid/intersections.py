@@ -24,6 +24,7 @@ def intersection_time_for_horizontal_line_and_moving_ball(y, y0, r, vy):
 
 
 def solve_square_equation(a, b, c):
+    #print("square equation: {}, {}, {}".format(a, b, c))
     d = b**2 - 4*a*c
     if d < -EPS:
         return None
@@ -104,6 +105,26 @@ def intersect_brick_and_moving_ball(lu, rd, ball):
     return result
 
 
+def intersect_static_ball_and_moving_ball(static_ball_position, static_ball_radius, ball_position, ball_radius, ball_direction):
+    x1, y1 = static_ball_position.x, static_ball_position.y
+    r1 = static_ball_radius
+    x0, y0 = ball_position.x, ball_position.y
+    dx, dy = ball_direction.x, ball_direction.y
+    r0 = ball_radius
+    # (x0 + dx * t - x1) ^ 2 + (y0 + dy * t - y1) ^ 2 = (r0 + r1) ^ 2
+    # (dx^2 + dy^2) * t^2 + 2 * (x0 * dx - x1 * dx + y0 * dy - y1 * dy) * t + (x0^2 + x1^2 + y0^2 + y1^2 - 2*x0*x1 - 2*y0*y1 - (r0 + r1)^2) = 0
+    t = solve_square_equation(dx**2 + dy**2, 2 * (x0 * dx - x1 * dx + y0 * dy - y1 * dy), (x0**2 + x1**2 + y0**2 + y1**2 - 2*x0*x1 - 2*y0*y1 - (r0 + r1)**2))
+    #print("Platform intersection: {}".format(t))
+    if t is None:
+        return None
+    x, y = x0 + dx * t, y0 + dy * t
+    a, b = x1 - x, y1 - y
+    x2, y2 = x + r0 / (r0 + r1) * a, y + r0 / (r0 + r1) * b
+    # a * x2 + b * y2 + c = 0
+    c = -(a * x2 + b * y2)
+    return (t, TLine(a, b, c))
+
+
 def reflect_vector_by_normal(d, n):
     n = n.get_normalised()
     dn = d.dot(n)
@@ -134,6 +155,7 @@ def reflect_moving_point_from_lines(p, d, first_move, intersections):
     
 
 def test_basic_functions():
+    print(intersect_static_ball_and_moving_ball(TVector(200, 400), 50, TVector(300, 300), 10, TVector(-1, 1)))
     print(intersection_time_for_horizontal_segment_and_moving_ball(0, 1, 0, TVector(0, -2), 2, TVector(-1, -1)))
     print(intersection_time_for_horizontal_segment_and_moving_ball(0, 1, 0, TVector(1, -3), 2, TVector(0, -1)))
     print(intersection_time_for_horizontal_segment_and_moving_ball(0.1, 1, 0, TVector(1, -3), 2, TVector(-1, 1)))
