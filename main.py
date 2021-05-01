@@ -62,47 +62,45 @@ def get_rendering_data(game):
     return { 'figures': figures }
 
 
-def play_game(game, model, logger):
-    play_time = 0.0
+def play_game(game, model, processor):
+    play_time, last_tick = 0.0, -1.0
     while not game.has_won():
         intersections = build_closest_intersections(game)
         t = min(intersections[-1][0][0], 1.0)
-        #t = intersections[-1][0]
         d = game.ball.direction.get_normalised().scalar_multiply(game.ball.speed * t)
         if abs(t - intersections[-1][0][0]) < EPS:
-            #print('reflections count: {}'.format(len(intersections)))
             game.ball.direction = reflect_moving_point_from_lines(game.ball.position, game.ball.direction, d, list(map(lambda x: (x[0][1], x[1]), intersections)))
         game.ball.position = game.ball.position.add(d)
         #print("position and direction: {}, {}, {}".format(game.ball.position, game.ball.direction, d))
+        play_time += t
+        if play_time - last_tick >= 1.0 - EPS:
+            processor.on_tick(game, model)
+            last_tick = play_time
+        if game.has_lost():
+            return (False, play_time)
+    return (True, play_time)
+
+
+class TRandomModel:
+    def __init__(self):
+        pass
+
+    def predict(self, game):
+        return random.uniform(-3.0, 3.0)
+
+
+class TPushProcessor:
+    def __init__(self):
+        pass
+
+    def on_tick(self, game, model):
         push_data('arkanoid', get_rendering_data(game))
         game.platform.position = game.move_platform(random.uniform(-3, 3))
-        #time.sleep(0.3)
-        data = game.serialize()
-        game = TGame(data)
-        sys.stdout.flush()
-
-
-    return (True, play_time)
 
 
 def main():
     game = TGame(json.load(open("game.json", "rt")))
-    while True:
-        intersections = build_closest_intersections(game)
-        t = min(intersections[-1][0][0], 1.0)
-        #t = intersections[-1][0]
-        d = game.ball.direction.get_normalised().scalar_multiply(game.ball.speed * t)
-        if abs(t - intersections[-1][0][0]) < EPS:
-            #print('reflections count: {}'.format(len(intersections)))
-            game.ball.direction = reflect_moving_point_from_lines(game.ball.position, game.ball.direction, d, list(map(lambda x: (x[0][1], x[1]), intersections)))
-        game.ball.position = game.ball.position.add(d)
-        #print("position and direction: {}, {}, {}".format(game.ball.position, game.ball.direction, d))
-        push_data('arkanoid', get_rendering_data(game))
-        game.platform.position = game.move_platform(random.uniform(-3, 3))
-        #time.sleep(0.3)
-        data = game.serialize()
-        game = TGame(data)
-        sys.stdout.flush()
+    play_game(game, TRandomModel(), TPushProcessor())
 
 
 if __name__ == '__main__':
