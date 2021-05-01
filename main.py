@@ -89,18 +89,29 @@ class TRandomModel:
         return random.uniform(-3.0, 3.0)
 
 
+class TFollowXModel:
+    def __init__(self):
+        pass
+
+    def predict(self, game):
+        delta = game.ball.position.x - game.platform.position
+        return min(max(delta, -3.0), 3.0)
+
+
 class TPushProcessor:
     def __init__(self):
         pass
 
     def on_tick(self, game, model):
         push_data('arkanoid', get_rendering_data(game))
-        game.platform.position = game.move_platform(random.uniform(-3, 3))
+        delta = model.predict(game)
+        game.move_platform(delta)
 
 
 def main():
     game = TGame(json.load(open("game.json", "rt")))
-    play_game(game, TRandomModel(), TPushProcessor())
+    #play_game(game, TRandomModel(), TPushProcessor())
+    play_game(game, TFollowXModel(), TPushProcessor())
 
 
 if __name__ == '__main__':

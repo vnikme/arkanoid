@@ -1,4 +1,7 @@
-from arkanoid.vector import TVector
+from arkanoid.vector import (
+    TVector,
+    EPS,
+)
 
 
 class TBrick:
@@ -82,12 +85,14 @@ class TGame:
         return TVector((position.x + 1) * self.brick_width, (position.y + 1) * self.brick_height)
 
     def move_platform(self, delta):
+        if delta < -3.0 or delta > 3.0:
+            return
         x = self.platform.position
         if x + delta - self.platform.radius < 0 or x + delta + self.platform.radius >= self.size.x:
-            return x
+            return
         if (x + delta - self.ball.position.x)**2 + (self.size.y - self.ball.position.y)**2 <= (self.ball.radius + self.platform.radius)**2:
-            return x
-        return x + delta
+            return
+        self.platform.position = x + delta
 
     def has_won(self):
         for brick in self.bricks:
@@ -96,5 +101,6 @@ class TGame:
         return True
 
     def has_lost(self):
+        return False
         return self.ball.position.y + self.ball.radius >= self.size.y - EPS
 
