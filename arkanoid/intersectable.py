@@ -6,6 +6,12 @@ from arkanoid.intersections import (
     is_approaching_line,
 )
 
+from arkanoid.vector import (
+    TVector,
+    EPS,
+)
+
+
 class TIntersectableBase:
     def __init__(self):
         pass
@@ -54,7 +60,7 @@ class TIntersectableBrick(TIntersectableBase):
         self.brick = brick
 
     def do_intersect(self, ball):
-        if self.brick.strength == 0:
+        if self.brick.strength <= 0:
             return None
         return intersect_brick_and_moving_ball(self.lu, self.rd, ball)
 
@@ -73,4 +79,33 @@ class TIntersectablePlatform(TIntersectableBase):
 
     def is_approaching_line(self, p, d, l):
         return d.y >= 0
+
+
+def build_closest_intersections(game):
+    objects = [
+        TIntersectableVerticalWall(0, 0, game.size.y),
+        TIntersectableVerticalWall(game.size.x, 0, game.size.y),
+        TIntersectableHorizontalWall(0, game.size.x, 0),
+        TIntersectableHorizontalWall(0, game.size.x, game.size.y),
+        TIntersectablePlatform(TVector(game.platform.position, game.size.y), game.platform.radius),
+    ] + list(
+        map(
+            lambda obj: TIntersectableBrick(
+                game.get_brick_lu(obj.position),
+                game.get_brick_rd(obj.position),
+                obj
+            ),
+            filter(lambda b: b.strength > 0, game.bricks),
+        )
+    )
+    #print(list(map(lambda obj: obj.intersect(game.ball), objects)))
+    result = []
+    for i, intersection in enumerate(map(lambda obj: obj.intersect(game.ball), objects)):
+        if intersection is None or abs(intersection[0]) < EPS:
+            continue
+        if not result or intersection[0] < result[-1][0][0] - EPS:
+            result = [(intersection, objects[i])]
+        elif abs(result[-1][0][0] - intersection[0]) < EPS:
+            result.append((intersection, objects[i]))
+    return result
 

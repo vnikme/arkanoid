@@ -89,3 +89,12 @@ class TGame:
             return x
         return x + delta
 
+    def has_won(self):
+        for brick in bricks:
+            if brick.strength > 0:
+                return False
+        return True
+
+    def has_lose(self):
+        return self.ball.position.y + self.ball.radius >= self.size.y - EPS
+

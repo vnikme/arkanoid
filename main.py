@@ -8,7 +8,6 @@ import time
 import urllib.request
 import urllib.parse
 from arkanoid.vector import (
-    TVector,
     EPS,
 )
 from arkanoid.game import (
@@ -18,10 +17,7 @@ from arkanoid.game import (
     TGame,
 )
 from arkanoid.intersectable import (
-    TIntersectableVerticalWall,
-    TIntersectableHorizontalWall,
-    TIntersectableBrick,
-    TIntersectablePlatform,
+    build_closest_intersections,
 )
 from arkanoid.intersections import (
     reflect_moving_point_from_lines,
@@ -66,33 +62,27 @@ def get_rendering_data(game):
     return { 'figures': figures }
 
 
-def build_closest_intersections(game):
-    objects = [
-        TIntersectableVerticalWall(0, 0, game.size.y),
-        TIntersectableVerticalWall(game.size.x, 0, game.size.y),
-        TIntersectableHorizontalWall(0, game.size.x, 0),
-        TIntersectableHorizontalWall(0, game.size.x, game.size.y),
-        TIntersectablePlatform(TVector(game.platform.position, game.size.y), game.platform.radius),
-    ] + list(
-        map(
-            lambda obj: TIntersectableBrick(
-                game.get_brick_lu(obj.position),
-                game.get_brick_rd(obj.position),
-                obj
-            ),
-            game.bricks
-        )
-    )
-    print(list(map(lambda obj: obj.intersect(game.ball), objects)))
-    result = []
-    for i, intersection in enumerate(map(lambda obj: obj.intersect(game.ball), objects)):
-        if intersection is None or abs(intersection[0]) < EPS:
-            continue
-        if not result or intersection[0] < result[-1][0][0] - EPS:
-            result = [(intersection, objects[i])]
-        elif abs(result[-1][0][0] - intersection[0]) < EPS:
-            result.append((intersection, objects[i]))
-    return result
+def play_game(game, model, logger):
+    play_time = 0.0
+    while not game.has_won():
+        intersections = build_closest_intersections(game)
+        t = min(intersections[-1][0][0], 1.0)
+        #t = intersections[-1][0]
+        d = game.ball.direction.get_normalised().scalar_multiply(game.ball.speed * t)
+        if abs(t - intersections[-1][0][0]) < EPS:
+            #print('reflections count: {}'.format(len(intersections)))
+            game.ball.direction = reflect_moving_point_from_lines(game.ball.position, game.ball.direction, d, list(map(lambda x: (x[0][1], x[1]), intersections)))
+        game.ball.position = game.ball.position.add(d)
+        #print("position and direction: {}, {}, {}".format(game.ball.position, game.ball.direction, d))
+        push_data('arkanoid', get_rendering_data(game))
+        game.platform.position = game.move_platform(random.uniform(-3, 3))
+        #time.sleep(0.3)
+        data = game.serialize()
+        game = TGame(data)
+        sys.stdout.flush()
+
+
+    return (True, play_time)
 
 
 def main():
@@ -106,8 +96,8 @@ def main():
             #print('reflections count: {}'.format(len(intersections)))
             game.ball.direction = reflect_moving_point_from_lines(game.ball.position, game.ball.direction, d, list(map(lambda x: (x[0][1], x[1]), intersections)))
         game.ball.position = game.ball.position.add(d)
-        print("position and direction: {}, {}, {}".format(game.ball.position, game.ball.direction, d))
-        print(push_data('arkanoid', get_rendering_data(game)))
+        #print("position and direction: {}, {}, {}".format(game.ball.position, game.ball.direction, d))
+        push_data('arkanoid', get_rendering_data(game))
         game.platform.position = game.move_platform(random.uniform(-3, 3))
         #time.sleep(0.3)
         data = game.serialize()
