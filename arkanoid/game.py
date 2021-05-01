@@ -85,13 +85,11 @@ class TGame:
         return TVector((position.x + 1) * self.brick_width, (position.y + 1) * self.brick_height)
 
     def move_platform(self, delta):
-        if delta < -3.0 or delta > 3.0:
-            return
+        delta = min(max(delta, -1.5), 1.5)
         x = self.platform.position
-        if x + delta - self.platform.radius < 0 or x + delta + self.platform.radius >= self.size.x:
-            return
-        if (x + delta - self.ball.position.x)**2 + (self.size.y - self.ball.position.y)**2 <= (self.ball.radius + self.platform.radius)**2:
-            return
+        delta = min(max(delta, self.platform.radius - x), self.size.x - self.platform.radius)
+        #if (x + delta - self.ball.position.x)**2 + (self.size.y - self.ball.position.y)**2 <= (self.ball.radius + self.platform.radius)**2:
+        #    return
         self.platform.position = x + delta
 
     def has_won(self):
@@ -101,6 +99,6 @@ class TGame:
         return True
 
     def has_lost(self):
-        return False
+        #return False
         return self.ball.position.y + self.ball.radius >= self.size.y - EPS
 

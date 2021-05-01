@@ -62,7 +62,7 @@ def get_rendering_data(game):
     return { 'figures': figures }
 
 
-def play_game(game, model, processor):
+def play_game(game, time_limit, model, processor):
     play_time, last_tick = 0.0, -1.0
     while not game.has_won():
         intersections = build_closest_intersections(game)
@@ -74,11 +74,14 @@ def play_game(game, model, processor):
         #print("position and direction: {}, {}, {}".format(game.ball.position, game.ball.direction, d))
         play_time += t
         if play_time - last_tick >= 1.0 - EPS:
-            processor.on_tick(game, model)
+            delta = model.predict(game)
+            processor.on_tick(play_time, game, delta)
+            game.move_platform(delta)
             last_tick = play_time
-        if game.has_lost():
-            return (False, play_time)
-    return (True, play_time)
+        if play_time > time_limit or game.has_lost():
+            processor.finalise(False, play_time)
+            return
+    processor.finalise(True, play_time)
 
 
 class TRandomModel:
@@ -102,16 +105,51 @@ class TPushProcessor:
     def __init__(self):
         pass
 
-    def on_tick(self, game, model):
+    def on_tick(self, play_time, game, delta):
         push_data('arkanoid', get_rendering_data(game))
-        delta = model.predict(game)
-        game.move_platform(delta)
+
+    def finalise(self, has_won, play_time):
+        print(has_won, play_time)
+
+
+class TMemoizeSomeProcessor:
+    def __init__(self, number_to_memoize):
+        self.number_to_memoize = number_to_memoize
+        self.n = 0
+        self.games = []
+
+    def on_tick(self, play_time, game, delta):
+        self.n += 1
+        if len(self.games) < self.number_to_memoize:
+            self.games.append(game.serialize())
+            return
+        if random.random() > 1 / self.n:
+            return
+        k = random.randint(0, self.number_to_memoize - 1)
+        self.games[k] = game.serialize()
+
+    def finalise(self, has_won, play_time):
+        print(has_won, play_time)
+
+    def extract_features(self, game):
+        features = []
+        features += [game.size.x, game.size.y, game.bricks_rows, game.bricks_cols, game.brick_width, game.brick_height]
+        bricks = [0 for _ in range(game.bricks_rows * game.bricks_cols)]
+        for brick in game.bricks:
+            bricks[brick.position.y * game.bricks_cols + brick.position.x] = brick.strength
+        features += bricks
+        features += [game.ball.position.x, game.ball.position.y, game.ball.speed, game.ball.direction.x, game.ball.direction.y, game.ball.radius]
+        features += [game.platform.position, game.platform.radius]
+        return features
 
 
 def main():
     game = TGame(json.load(open("game.json", "rt")))
-    #play_game(game, TRandomModel(), TPushProcessor())
-    play_game(game, TFollowXModel(), TPushProcessor())
+    #play_game(game, 1000000, TRandomModel(), TPushProcessor())
+    #play_game(game, 100000, TFollowXModel(), TPushProcessor())
+    processor = TMemoizeSomeProcessor(3)
+    play_game(game, 100000, TFollowXModel(), processor)
+    print(processor.games)
 
 
 if __name__ == '__main__':
