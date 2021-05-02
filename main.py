@@ -23,6 +23,9 @@ from arkanoid.intersections import (
     reflect_moving_point_from_lines,
     test_basic_functions,
 )
+from model import (
+    MLP,
+)
 
 
 hostName = "ai.church"
@@ -173,20 +176,27 @@ class TMemoizeSomeProcessor:
         self.games[k] = game.serialize()
 
 
+def create_model(game, number_of_layers, layers_size, device):
+    raw_features = extract_features(game)
+    model = MLP([len(raw_features) + 1] + [layers_size] * number_of_layers + [1], device)
+
+
 def main():
+    cuda = torch.cuda.is_available() #and False
+    device = torch.device("cuda" if cuda else "cpu")
     game = TGame(json.load(open("game.json", "rt")))
     #play_game(game, 1000000, TRandomModel(), TPushProcessor())
     #play_game(game, 100000, TFollowXModel(), TPushProcessor())
     #processor = TMemoizeSomeProcessor(3)
     #play_game(game, 100000, TFollowXModel(), processor)
     #print(processor.games)
-    ts = time.time()
-    print(list(map(lambda x: x[0], prepare_pool(game, 10, 10000, TRandomModel(), list(range(-2, 3))))))
-    print('Time: {}'.format(time.time() - ts))
-    ts = time.time()
-    print(list(map(lambda x: x[0], prepare_pool(game, 10, 10000, TFollowXModel(), list(range(-2, 3))))))
-    print('Time: {}'.format(time.time() - ts))
-    print(extract_features(game))
+    #ts = time.time()
+    #print(list(map(lambda x: x[0], prepare_pool(game, 10, 10000, TRandomModel(), list(range(-2, 3))))))
+    #print('Time: {}'.format(time.time() - ts))
+    #ts = time.time()
+    #print(list(map(lambda x: x[0], prepare_pool(game, 10, 10000, TFollowXModel(), list(range(-2, 3))))))
+    #print('Time: {}'.format(time.time() - ts))
+    #print(extract_features(game))
 
 
 if __name__ == '__main__':
