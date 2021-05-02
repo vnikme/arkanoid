@@ -78,7 +78,7 @@ class TIntersectablePlatform(TIntersectableBase):
         return intersect_static_ball_and_moving_ball(self.platform_position, self.platform_radius, ball.position, ball.radius, ball_direction)
 
     def is_approaching_line(self, p, d, l):
-        return d.y >= 0
+        return d.y > -EPS
 
 
 def build_closest_intersections(game):

@@ -87,7 +87,7 @@ class TGame:
     def move_platform(self, delta):
         delta = min(max(delta, -1.5), 1.5)
         x = self.platform.position
-        delta = min(max(delta, self.platform.radius - x), self.size.x - self.platform.radius)
+        delta = min(max(delta, self.platform.radius - x), self.size.x - x - self.platform.radius)
         #if (x + delta - self.ball.position.x)**2 + (self.size.y - self.ball.position.y)**2 <= (self.ball.radius + self.platform.radius)**2:
         #    return
         self.platform.position = x + delta

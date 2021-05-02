@@ -123,7 +123,7 @@ def intersect_static_ball_and_moving_ball(static_ball_position, static_ball_radi
         r0 *= t
         r1 *= t
         t = 0.0
-        print("too close: {} {} {} {} {} {} {} {}".format(x0, y0, r0, dx, dy, x1, y1, r1))
+        #print("too close: {} {} {} {} {} {} {} {}".format(x0, y0, r0, dx, dy, x1, y1, r1))
     x, y = x0 + dx * t, y0 + dy * t
     a, b = x1 - x, y1 - y
     x2, y2 = x + r0 / (r0 + r1) * a, y + r0 / (r0 + r1) * b
