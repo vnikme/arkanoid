@@ -2,9 +2,11 @@
 
 
 import json
+import numpy
 import random
 import sys
 import time
+import torch
 import urllib.request
 import urllib.parse
 from arkanoid.vector import (
@@ -86,7 +88,7 @@ def play_game(game, time_limit, model, processor):
     return (True, play_time)
 
 
-def prepare_pool(game, count, time_limit, model, steps):
+def collect_training_examples(game, count, time_limit, model, steps):
     result = []
     queue = [game.serialize()]
     i = 0
@@ -94,7 +96,7 @@ def prepare_pool(game, count, time_limit, model, steps):
         if len(result) >= count:
             break
         step_results = []
-        processor = TMemoizeSomeProcessor(3)
+        processor = TMemoizeSomeProcessor(10)
         for step in steps:
             game = TGame(queue[i])
             patched_model = TModelWithOverridenFirstStep(model, step)
@@ -117,6 +119,17 @@ def extract_features(game):
     return features
 
 
+def prepare_training_set(game, count, time_limit, model, steps, device):
+    x, y = [], []
+    for step_results, game_data in collect_training_examples(game, count, time_limit, model, steps):
+        game = TGame(game_data)
+        features = extract_features(game)
+        for step, has_won, time_play in step_results:
+            x.append([step] + features)
+            y.append((time_play if has_won else time_limit * 10 - time_play) / time_limit)
+    return torch.tensor(x, dtype=torch.float).to(device), torch.tensor(y, dtype=torch.float).reshape((-1, 5)).to(device)
+
+
 class TModelWithOverridenFirstStep:
     def __init__(self, base_model, first_result):
         self.base_model = base_model
@@ -137,6 +150,24 @@ class TRandomModel:
 
     def predict(self, game):
         return random.uniform(-2.0, 2.0)
+
+
+class TMLPModel:
+    def __init__(self, mlp, steps, smoothing, device):
+        self.mlp = mlp
+        self.steps = steps
+        self.smoothing = smoothing
+        self.device = device
+
+    def predict(self, game):
+        self.mlp.eval()
+        features = extract_features(game)
+        features = [[step] + features for step in self.steps]
+        features = torch.tensor(features, dtype=torch.float).to(self.device)
+        probs = torch.softmax(self.mlp(features), 0).detach().cpu().numpy().reshape(len(self.steps))
+        probs += self.smoothing
+        probs /= numpy.sum(probs)
+        return numpy.random.choice(self.steps, p=probs)
 
 
 class TFollowXModel:
@@ -179,12 +210,34 @@ class TMemoizeSomeProcessor:
 def create_model(game, number_of_layers, layers_size, device):
     raw_features = extract_features(game)
     model = MLP([len(raw_features) + 1] + [layers_size] * number_of_layers + [1], device)
+    return model
 
 
 def main():
     cuda = torch.cuda.is_available() #and False
     device = torch.device("cuda" if cuda else "cpu")
     game = TGame(json.load(open("game.json", "rt")))
+    mlp = create_model(game, 10, 256, device)
+    steps = list(range(-2, 3))
+    opt = torch.optim.Adam(mlp.parameters(), lr=0.0001)
+    while True:
+        start_ts = time.time()
+        x, y = prepare_training_set(game, 101, 1000, TMLPModel(mlp, steps, 0.03, device), steps, device)
+        set_ts = time.time()
+        #print(y.shape)
+        #print(y)
+        mlp.train()
+        mlp.zero_grad()
+        logits = mlp(x)
+        forward_ts = time.time()
+        main_loss = torch.sum(torch.softmax(logits.reshape(y.shape), 1) * y) / y.shape[0]
+        reg_loss = torch.sum(logits * logits) / y.shape[0] / y.shape[1]
+        loss = main_loss + 0.05 * reg_loss
+        loss.backward()
+        opt.step()
+        backward_ts = time.time()
+        print('{:.3f} {:.3f} {:.5f}, times: {:.2f} {:.2f} {:.2f}'.format(loss.item(), main_loss.item(), reg_loss.item(), set_ts - start_ts, forward_ts - set_ts, backward_ts - forward_ts))
+        sys.stdout.flush()
     #play_game(game, 1000000, TRandomModel(), TPushProcessor())
     #play_game(game, 100000, TFollowXModel(), TPushProcessor())
     #processor = TMemoizeSomeProcessor(3)
