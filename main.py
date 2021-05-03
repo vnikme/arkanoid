@@ -214,9 +214,12 @@ def create_model(game, number_of_layers, layers_size, device):
 
 
 def main():
+    game = TGame(json.load(open("game.json", "rt")))
+    #play_game(game, 1000000, TRandomModel(), TPushProcessor())
+    #play_game(game, 100000, TFollowXModel(), TPushProcessor())
+    #return
     cuda = torch.cuda.is_available() #and False
     device = torch.device("cuda" if cuda else "cpu")
-    game = TGame(json.load(open("game.json", "rt")))
     mlp = create_model(game, 10, 256, device)
     steps = list(range(-2, 3))
     opt = torch.optim.Adam(mlp.parameters(), lr=0.0001)
@@ -238,8 +241,6 @@ def main():
         backward_ts = time.time()
         print('{:.3f} {:.3f} {:.5f}, times: {:.2f} {:.2f} {:.2f}'.format(loss.item(), main_loss.item(), reg_loss.item(), set_ts - start_ts, forward_ts - set_ts, backward_ts - forward_ts))
         sys.stdout.flush()
-    #play_game(game, 1000000, TRandomModel(), TPushProcessor())
-    #play_game(game, 100000, TFollowXModel(), TPushProcessor())
     #processor = TMemoizeSomeProcessor(3)
     #play_game(game, 100000, TFollowXModel(), processor)
     #print(processor.games)
